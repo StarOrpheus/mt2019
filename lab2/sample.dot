@@ -1,0 +1,27 @@
+digraph AST {
+	x0x557292a9e800 [label="[declaration]" color="#000d16"];
+	x0x557292a9e860 [label="[declaration specifiers]" color="#021d28"];
+	x0x557292a9e800 -> x0x557292a9e860;
+	x0x557292a9e8c0 [label="int" color="#262d33"];
+	x0x557292a9e860 -> x0x557292a9e8c0;
+	x0x557292a9e960 [label="[declarator list]" color="#103e55"];
+	x0x557292a9e800 -> x0x557292a9e960;
+	x0x557292a9e9c0 [label="[declarator]" color="#4f8ba7"];
+	x0x557292a9e960 -> x0x557292a9e9c0;
+	x0x557292a9eb40 [label="$X" color="#92afbf"];
+	x0x557292a9e9c0 -> x0x557292a9eb40;
+	x0x557292a9ea80 [label="[declarator]" color="#4f8ba7"];
+	x0x557292a9e960 -> x0x557292a9ea80;
+	x0x557292a9ea20 [label="[pointer]" color="#b1bac1"];
+	x0x557292a9ea80 -> x0x557292a9ea20;
+	x0x557292a9eae0 [label="[type qualifier list]" color="#e6e1de"];
+	x0x557292a9ea20 -> x0x557292a9eae0;
+	x0x557292a9ebe0 [label="const" color="#807b77"];
+	x0x557292a9eae0 -> x0x557292a9ebe0;
+	x0x557292a9ec60 [label="volatile" color="#807b77"];
+	x0x557292a9eae0 -> x0x557292a9ec60;
+	x0x557292a9ece0 [label="[pointer]" color="#b1bac1"];
+	x0x557292a9ea20 -> x0x557292a9ece0;
+	x0x557292a9ed60 [label="$y" color="#92afbf"];
+	x0x557292a9ea80 -> x0x557292a9ed60;
+}
