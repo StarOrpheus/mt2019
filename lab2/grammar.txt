@@ -1,0 +1,75 @@
+storage_class_specifier
+	: EXTERN
+	| STATIC
+	| AUTO
+	| REGISTER
+	;
+
+type_specifier
+	: VOID
+	| CHAR
+	| SHORT
+	| INT
+	| LONG
+	| FLOAT
+	| DOUBLE
+	| SIGNED
+	| UNSIGNED
+	;
+
+type_qualifier
+	: CONST
+	| VOLATILE
+	;
+
+; FIRST = {storage_class_specifier, type_specifier, type_qualifier}
+; FOLLOW = {}
+declaration_specifiers
+	: storage_class_specifier
+	| storage_class_specifier declaration_specifiers
+	| type_specifier
+	| type_specifier declaration_specifiers
+	| type_qualifier
+	| type_qualifier declaration_specifiers
+	;
+
+; FIRST = {CONST, VOLATILE}
+; FOLLOW = {CONST, VOLATILE}
+type_qualifier_list
+	: type_qualifier
+	| type_qualifier type_qualifier_list 
+	;
+
+; FIRST = {'*'}
+; FOLLOW = {'*', }
+pointer
+	: '*'
+	| '*' type_qualifier_list
+	| '*' pointer
+	| '*' type_qualifier_list pointer
+	;
+
+; FIRST = {INDENTIFIER, '('}
+direct_declarator
+	: IDENTIFIER
+	| '(' declarator ')'
+    ;
+
+; FIRST = {'*', IDENTIFIER, '('}
+declarator
+	: pointer direct_declarator
+	| direct_declarator
+	;
+    
+; FIRST = {'*', IDENTIFIER, '('} 
+declarator_list
+	: declarator
+	| declarator ',' declarator_list
+	;
+
+; FIRST = {storage_class_specifier, type_specifier, type_qualifier, IDENTIFIER}
+declaration
+	: declaration_specifiers ';'
+	| declaration_specifiers declarator_list ';'
+	| declarator_list ';'
+    ;
