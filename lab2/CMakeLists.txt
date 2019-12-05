@@ -14,8 +14,8 @@ include_directories(include)
 
 add_library(parser STATIC lexer.cpp parser.cpp)
 
-add_executable(parser_main parser_main.cpp)
-target_link_libraries(parser_main parser)
+add_executable(vis_main vis_main.cpp)
+target_link_libraries(vis_main parser)
 
 add_executable(all_tests all_tests.cpp)
 target_link_libraries(all_tests gtest parser)
