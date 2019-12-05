@@ -12,6 +12,7 @@ using ast_ptr = std::unique_ptr<ast_node>;
 
 enum class node_kind
 {
+    TERMINAL,
     STORAGE_CLASS_SPECIFIER,
     TYPE_SPECIFIER,
     TYPE_QUALIFIER,
@@ -26,6 +27,10 @@ enum class node_kind
 
 struct ast_node
 {
+    explicit ast_node(token_t);
+
+    ast_node() = default;
+
     node_kind               kind;
     std::optional<token_t>  data;
     std::vector<ast_ptr>    args;

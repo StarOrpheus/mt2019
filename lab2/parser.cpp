@@ -39,8 +39,8 @@ ast_ptr parse_pointer(lexer& lex)
 {
     ast_ptr result = std::make_unique<ast_node>();
     result->kind = node_kind::POINTER;
-
     assert(variant_eq(lex.get_current(), special_symbols::ASTERISK));
+    result->args.push_back(std::make_unique<ast_node>(lex.get_current()));
 
     auto& cur = lex.read_token();
     if (cur.index() == 2)
@@ -75,12 +75,11 @@ ast_ptr parse_direct_declarator(lexer& lex)
             {
                 if (sym != special_symbols::OPEN_PARANTHESIS)
                     throw std::runtime_error("Unexpected token");
+                result->args.push_back(std::make_unique<ast_node>(lex.get_current()));
+
                 auto& tok = lex.read_token();
-                auto declarator = parse_declarator(lex);
-                if (declarator->kind == node_kind::DECLARATOR)
-                    result = std::move(declarator->args[0]);
-                else
-                    result = std::move(declarator);
+                result->args.push_back(parse_declarator(lex));
+                result->args.push_back(std::make_unique<ast_node>(lex.get_current()));
                 assert(variant_eq(lex.get_current(), special_symbols::CLOSE_PARANTHESIS));
                 lex.read_token();
             },
@@ -152,7 +151,7 @@ ast_ptr parse_declarator_list(lexer& lex)
 
         if (!variant_eq(lex.get_current(), special_symbols::COMMA))
             break;
-
+        result->args.push_back(std::make_unique<ast_node>(lex.get_current()));
         lex.read_token();
     }
 
@@ -228,21 +227,24 @@ ast_ptr parse_decl(lexer& lex)
                     [&lex] (std::string const&) -> ast_ptr { return parse_declarator_list(lex); },
                     [&lex, &got_semicolon] (special_symbols sym) -> ast_ptr
                     {
-                        if (sym == special_symbols::SEMICOLON)
-                        {
-                            got_semicolon = true;
-                            return nullptr;
-                        }
-                        else
+                        if (sym != special_symbols::SEMICOLON)
                             return parse_declarator_list(lex);
+                        else
+                            return nullptr;
                     },
                 },
             lex.get_current()
         )
     );
 
-    if (got_semicolon)
+    if (!current_node->args.empty() && current_node->args.back() == nullptr)
         current_node->args.pop_back();
+
+    if (variant_eq(lex.get_current(), special_symbols::SEMICOLON))
+        current_node->args.push_back(std::make_unique<ast_node>(lex.get_current()));
+
+//    if (got_semicolon)
+//        current_node->args.pop_back();
 
     return std::move(current_node);
 }
@@ -375,6 +377,7 @@ void to_string_impl(std::stringstream& ss, node_kind kind)
     static const std::unordered_map<node_kind, std::string>
             char_to_spec_symbol =
             {
+                    {node_kind::TERMINAL, ""},
                     {node_kind::STORAGE_CLASS_SPECIFIER, "[storage class specifier]"},
                     {node_kind::TYPE_SPECIFIER, "[type specifier]"},
                     {node_kind::TYPE_QUALIFIER, "[type qualifier]"},
@@ -437,6 +440,8 @@ char const* get_dot_color(std::stringstream& ss, node_kind kind)
 {
     switch (kind)
     {
+        case node_kind::TERMINAL:
+            return "#b1bac1";
         case node_kind::STORAGE_CLASS_SPECIFIER:
             return "#151d1f";
         case node_kind::TYPE_SPECIFIER:
@@ -496,3 +501,9 @@ std::string to_dot_repr(ast_ptr const& ast)
 
     return ss.str();
 }
+
+ast_node::ast_node(token_t tok)
+    : kind{node_kind::TERMINAL},
+        data(std::move(tok)),
+        args{}
+{}

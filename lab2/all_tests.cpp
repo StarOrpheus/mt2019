@@ -67,43 +67,49 @@ TEST(lexer, spec_symbols_tokens)
 TEST(parser, explicit_int_rule)
 {
     std::stringstream ss("x;");
-    assert(to_string(parse(ss)) == "([declaration] ([direct declarator] $x ))");
+    assert(to_string(parse(ss)) == "([declaration] ([direct declarator] $x )( ; ))");
 }
 
 TEST(parser, empty_decl)
 {
     std::stringstream ss("unsigned volatile int;");
-    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] unsigned )([type qualifier] volatile )([type specifier] int )))");
+    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] unsigned )([type qualifier] volatile )([type specifier] int ))( ; ))");
 }
 
 TEST(parser, basic_decl)
 {
     std::stringstream ss("int x;");
-    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] int ))([direct declarator] $x ))");
+    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] int ))([direct declarator] $x )( ; ))");
+}
+
+TEST(parser, single_int_pointer)
+{
+    std::stringstream ss("int* x;");
+    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] int ))([declarator] ([pointer] ( * ))([direct declarator] $x ))( ; ))");
+}
+
+TEST(parser, decl_qualifiers)
+{
+    std::stringstream ss("const int volatile x;");
+    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type qualifier] const )([type specifier] int )([type qualifier] volatile ))([direct declarator] $x )( ; ))");
 }
 
 TEST(parser, paranthesis)
 {
     std::stringstream ss("int ((X));");
-    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] int ))([declarator] ([direct declarator] $X )))");
+    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] int ))([declarator] ([direct declarator] ( ( )([declarator] ([direct declarator] ( ( )([direct declarator] $X )( ) )))( ) )))( ; ))");
 }
 
 TEST(parser, multiple_declarators)
 {
-    std::stringstream ss("int ((X)), * const volatile * y;");
-    assert(to_string(parse(ss)) == "[declaration] ([declaration specifiers] ([type specifier] int ))([declarator list] "
-                                   "([declarator] ([direct declarator] $X ))([declarator] ([pointer] ([type qualifier list] "
-                                   "([type qualifier] const )([type qualifier] volatile ))([pointer] ))([direct declarator] $y ))))");
+    std::stringstream ss("int x, y;");
+    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type specifier] int ))([declarator list] ([direct declarator] $x )( , )([direct declarator] $y ))( ; ))");
 }
 
 TEST(parser, specifiers_qualifiers)
 {
     std::stringstream ss("volatile const int * const*** volatile*const* volatile (x);");
-    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type qualifier] volatile )"
-                                   "([type qualifier] const )([type specifier] int ))([declarator] ([pointer] "
-                                   "([type qualifier] const )([pointer] ([pointer] ([pointer] ([type qualifier] "
-                                   "volatile )([pointer] ([type qualifier] const )([pointer] ([type qualifier] "
-                                   "volatile )))))))([direct declarator] $x )))");
+    assert(to_string(parse(ss)) == "([declaration] ([declaration specifiers] ([type qualifier] volatile )([type qualifier] const )([type specifier] int ))([declarator] ([pointer] ( * )([type qualifier] const )([pointer] ( * )([pointer] ( * )([pointer] ( * )([type qualifier] volatile )([pointer] ( * )([type qualifier] const )([pointer] ( * )([type qualifier] volatile )))))))([direct declarator] ( ( )([direct declarator] $x )( ) )))( ; ))");
 }
 
 int main(int argc, char* argv[])
