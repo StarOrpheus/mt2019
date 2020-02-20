@@ -1,0 +1,69 @@
+grammar calculator;
+
+header {
+    #include "pw.h"
+}
+
+fields [
+    int value;
+]
+
+expr
+    : EPS {result->value = 0; }
+    | second expr_rhs(second0.value) {result->value = expr_rhs1.value; }
+    ;
+
+expr_rhs[int lhs]
+    : EPS {result->value = lhs;}
+    | PLUS second expr_rhs(lhs + second1.value) {result->value = expr_rhs2.value;}
+    | MINUS second expr_rhs(lhs - second1.value) {result->value = expr_rhs2.value;}
+    ;
+
+second  
+    : pw second_rhs(pw0.value) {result->value = second_rhs1.value;}
+    ;
+
+second_rhs[int lhs] 
+    : MULTIPLICATION pw second_rhs(lhs * pw1.value) {result->value = second_rhs2.value;}
+    | DIVISION pw second_rhs(lhs / pw1.value) {result->value = pw1.value;}
+    | EPS {result->value = lhs;}
+    ;
+
+pw
+    : unar pw_rhs(unar0.value) { result->value = pw_rhs1.value; }
+    ;
+
+pw_rhs[int lhs]
+    : POWER unar pw_rhs(unar1.value) {result->value = pw(lhs, pw_rhs2.value);}
+    | EPS {result->value = lhs;}
+    ;
+
+unar
+    : MINUS first { result->value = -(first1.value); }
+    | first { result->value = first0.value; }
+    ;
+
+first 
+    : NUMBER 
+    {
+        result->value = 0;
+        for (auto c : NUMBER0.get_text())
+            assert(c >= '0' && c <= '9' && "Unexpected char in the NUMBER rule!");
+        for (auto c : NUMBER0.get_text())
+            result->value = (result->value * 10) + (c - '0');
+    }
+    | OPEN expr CLOSE {result->value = expr1.value; }
+    ;
+
+DIVISION: '/';
+MINUS: '-';
+PLUS : '\+';
+MULTIPLICATION : '\*';
+NUMBER : '[0-9]+';
+OPEN : '\(';
+CLOSE : '\)';
+WHITESPACE : '[ \t\r\n]' -> skip ;
+EPS: 'EPS' ;
+POWER: '\*\*' ;
+
+
